@@ -17,13 +17,13 @@
         .key-display { 
             background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 15px; margin-bottom: 25px; 
             font-size: 18px; color: #00ffa3; font-family: monospace; border: 1px solid rgba(0, 255, 163, 0.1);
-            min-height: 65px; display: flex; align-items: center; justify-content: center;
+            min-height: 65px; display: flex; align-items: center; justify-content: center; word-break: break-all;
         }
         button { 
             background: #fff; color: #000; border: none; padding: 16px; border-radius: 12px; 
-            font-weight: 800; width: 100%; font-size: 14px; text-transform: uppercase; cursor: pointer;
+            font-weight: 800; width: 100%; font-size: 14px; text-transform: uppercase; cursor: pointer; transition: 0.2s;
         }
-        button:disabled { background: #333; color: #777; }
+        button:disabled { background: #222; color: #555; }
         #timer { margin-top: 15px; font-size: 12px; color: #ff4a4a; display: none; }
     </style>
 </head>
@@ -31,18 +31,16 @@
 
     <div class="glass-card">
         <h2>sKillAura</h2>
-        <p id="statusText">Checking status...</p>
+        <p id="statusText">System Loading...</p>
         <div class="key-display" id="keyDisplay">••••••••••</div>
         <button id="mainBtn" disabled onclick="generateFlow()">Get Key</button>
-        <div id="timer">Cooldown: <span id="timeLeft"></span></div>
+        <div id="timer">New key available in: <span id="timeLeft"></span></div>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
-        const cooldownTime = 12 * 60 * 60 * 1000;
-
-        // Запуск проверки сразу при загрузке
-        window.onload = checkStatusByIP;
+        
+        window.onload = checkStatus;
 
         async function getIP() {
             const res = await fetch('https://api.ipify.org?format=json');
@@ -50,34 +48,33 @@
             return data.ip;
         }
 
-        async function checkStatusByIP() {
+        async function checkStatus() {
             const btn = document.getElementById('mainBtn');
             const display = document.getElementById('keyDisplay');
             const status = document.getElementById('statusText');
 
             try {
                 const ip = await getIP();
-                // Делаем тестовый запрос генерации (сервер сам поймет, если ключ уже есть)
                 const response = await fetch(API_URL + "?action=generate&ip=" + ip);
                 const result = await response.text();
 
-                if (result.startsWith("cooldown_")) {
-                    // Ключ уже есть в базе для этого IP!
-                    // Чтобы получить сам текст ключа, нам нужно будет добавить функцию в GAS, 
-                    // но пока мы просто скажем пользователю, что он уже генерировал.
-                    // Давай для удобства пока выводить "ALREADY GENERATED"
-                    status.innerText = "Key already active";
-                    display.innerText = "CHECK TABLE"; // В идеале тут должен быть сам ключ
-                    const remaining = parseInt(result.split("_")[1]);
+                if (result.startsWith("exists_")) {
+                    const parts = result.split("_");
+                    const activeKey = parts[1] + "_" + parts[2]; // Собираем ключ sKill_...
+                    const remaining = parseInt(parts[3]);
+
+                    status.innerText = "Key is active";
+                    display.innerText = activeKey;
+                    setupCopyMode(activeKey);
                     startTimer(Date.now() + remaining);
                 } else {
-                    // Ключа нет, даем генерировать
-                    status.innerText = "Key expires in 12 hours";
-                    display.innerText = "NOT GENERATED";
+                    status.innerText = "No active key found";
+                    display.innerText = "READY";
                     btn.disabled = false;
+                    btn.innerText = "Get Key";
                 }
             } catch (e) {
-                status.innerText = "Connection error";
+                status.innerText = "Connection Error";
             }
         }
 
@@ -91,10 +88,11 @@
                 const ip = await getIP();
                 const response = await fetch(API_URL + "?action=generate&ip=" + ip);
                 const result = await response.text();
-
+                
                 display.innerText = result;
                 setupCopyMode(result);
-                startTimer(Date.now() + cooldownTime);
+                startTimer(Date.now() + (12 * 60 * 60 * 1000));
+                document.getElementById('statusText').innerText = "Key Generated!";
             } catch (e) {
                 alert("Error!");
                 btn.disabled = false;
@@ -106,7 +104,13 @@
             btn.disabled = false;
             btn.innerText = "Copy Key";
             btn.onclick = () => {
-                navigator.clipboard.writeText(key);
+                const el = document.createElement('textarea');
+                el.value = key;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                
                 btn.innerText = "COPIED!";
                 setTimeout(() => btn.innerText = "Copy Key", 1500);
             };
