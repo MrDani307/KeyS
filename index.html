@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
-            background: #080808; 
+            background: #050505; 
             color: white; 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             display: flex; 
@@ -15,43 +15,36 @@
             align-items: center; 
             height: 100vh; 
             margin: 0; 
-            overflow: hidden;
         }
-        /* Эффект Glassmorphism */
         .glass-card { 
-            background: rgba(255, 255, 255, 0.03); 
-            backdrop-filter: blur(25px); 
-            -webkit-backdrop-filter: blur(25px);
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
             padding: 40px 30px; 
-            border-radius: 35px; 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 30px; 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
             text-align: center; 
             width: 90%; 
-            max-width: 380px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.7);
-            animation: fadeIn 0.8s ease-out;
+            max-width: 360px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        h2 { font-weight: 600; letter-spacing: 1px; margin: 0 0 10px 0; font-size: 28px; }
-        p { opacity: 0.5; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-weight: 600; letter-spacing: 2px; margin: 0 0 5px 0; font-size: 26px; color: #fff; }
+        p { opacity: 0.4; font-size: 13px; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
         
         .key-display { 
-            background: rgba(0, 0, 0, 0.3); 
-            padding: 18px; 
-            border-radius: 18px; 
-            margin-bottom: 30px; 
-            font-size: 20px; 
+            background: rgba(0, 0, 0, 0.4); 
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-bottom: 25px; 
+            font-size: 18px; 
             color: #00ffa3; 
             font-family: 'Courier New', monospace;
-            border: 1px solid rgba(0, 255, 163, 0.2);
-            text-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
-            min-height: 60px;
+            border: 1px solid rgba(0, 255, 163, 0.1);
+            min-height: 65px;
             display: flex;
             align-items: center;
             justify-content: center;
+            word-break: break-all;
         }
         
         button { 
@@ -59,75 +52,115 @@
             color: #000000; 
             border: none; 
             padding: 16px; 
-            border-radius: 16px; 
-            font-weight: 700; 
+            border-radius: 12px; 
+            font-weight: 800; 
             cursor: pointer; 
-            transition: all 0.2s ease;
+            transition: 0.2s;
             width: 100%; 
-            font-size: 16px;
+            font-size: 14px;
             text-transform: uppercase;
-            box-shadow: 0 10px 20px rgba(255,255,255,0.1);
         }
-        button:active { transform: scale(0.96); opacity: 0.9; }
-        button:disabled { background: #555; color: #888; cursor: not-allowed; }
+        button:active { transform: scale(0.97); }
+        button:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+
+        #timer { margin-top: 15px; font-size: 12px; color: #ff4a4a; display: none; }
     </style>
 </head>
 <body>
 
     <div class="glass-card">
         <h2>sKillAura</h2>
-        <p>Ключ активен 12 часов</p>
+        <p>Key expires in 12 hours</p>
         
-        <div class="key-display" id="keyDisplay">••••••••••</div>
+        <div class="key-display" id="keyDisplay">NOT GENERATED</div>
         
-        <button id="mainBtn" onclick="handleFlow()">Получить ключ</button>
+        <button id="mainBtn" onclick="generateFlow()">Get Key</button>
+        <div id="timer">You can generate again in: <span id="timeLeft"></span></div>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
-        let generatedKey = "";
+        const cooldownTime = 12 * 60 * 60 * 1000; // 12 hours
 
-        async function handleFlow() {
-            const btn = document.getElementById('mainBtn');
-            const display = document.getElementById('keyDisplay');
+        window.onload = function() {
+            checkExistingKey();
+        };
 
-            if (generatedKey === "") {
-                // Этап генерации
-                btn.disabled = true;
-                btn.innerText = "Генерация...";
-                display.innerText = "ЗАГРУЗКА...";
+        function checkExistingKey() {
+            const savedKey = localStorage.getItem('skillKey');
+            const savedTime = localStorage.getItem('skillTime');
+            const now = Date.now();
 
-                try {
-                    const response = await fetch(API_URL + "?action=generate");
-                    generatedKey = await response.text();
-                    
-                    display.innerText = generatedKey;
-                    btn.disabled = false;
-                    btn.innerText = "Копировать";
-                } catch (error) {
-                    alert("Ошибка сервера! Проверь интернет.");
-                    btn.disabled = false;
-                    btn.innerText = "Попробовать снова";
-                    display.innerText = "ОШИБКА";
-                }
-            } else {
-                // Этап копирования
-                copyToClipboard(generatedKey);
+            if (savedKey && savedTime && (now - savedTime < cooldownTime)) {
+                // Key is still valid
+                document.getElementById('keyDisplay').innerText = savedKey;
+                setupCopyMode(savedKey);
+                startTimer(parseInt(savedTime) + cooldownTime);
             }
         }
 
-        function copyToClipboard(text) {
+        async function generateFlow() {
             const btn = document.getElementById('mainBtn');
-            const tempInput = document.createElement("input");
-            document.body.appendChild(tempInput);
-            tempInput.value = text;
-            tempInput.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
+            const display = document.getElementById('keyDisplay');
 
-            const originalText = btn.innerText;
-            btn.innerText = "СКОПИРОВАНО!";
-            setTimeout(() => { btn.innerText = originalText; }, 2000);
+            btn.disabled = true;
+            btn.innerText = "Connecting...";
+
+            try {
+                const response = await fetch(API_URL + "?action=generate");
+                const key = await response.text();
+                
+                const now = Date.now();
+                localStorage.setItem('skillKey', key);
+                localStorage.setItem('skillTime', now);
+
+                display.innerText = key;
+                setupCopyMode(key);
+                startTimer(now + cooldownTime);
+            } catch (error) {
+                alert("Server error!");
+                btn.disabled = false;
+                btn.innerText = "Try Again";
+            }
+        }
+
+        function setupCopyMode(key) {
+            const btn = document.getElementById('mainBtn');
+            btn.disabled = false;
+            btn.innerText = "Copy Key";
+            btn.onclick = () => {
+                navigator.clipboard.writeText(key);
+                const oldText = btn.innerText;
+                btn.innerText = "COPIED!";
+                setTimeout(() => { btn.innerText = oldText; }, 1500);
+            };
+        }
+
+        function startTimer(endTime) {
+            const timerDiv = document.getElementById('timer');
+            const timeSpan = document.getElementById('timeLeft');
+            timerDiv.style.display = "block";
+
+            function update() {
+                const now = Date.now();
+                const diff = endTime - now;
+
+                if (diff <= 0) {
+                    timerDiv.style.display = "none";
+                    localStorage.removeItem('skillKey');
+                    localStorage.removeItem('skillTime');
+                    location.reload();
+                    return;
+                }
+
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                timeSpan.innerText = `${h}h ${m}m ${s}s`;
+            }
+
+            update();
+            setInterval(update, 1000);
         }
     </script>
 </body>
