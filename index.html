@@ -3,146 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daniil Premium | Key System</title>
+    <title>DANIIL KEY SYSTEM</title>
     <style>
-        :root { --primary: #00ffa3; --bg: #050505; }
+        :root { --main: #00ffa3; --bg: #050505; --card: rgba(255, 255, 255, 0.03); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         
         body { 
             background: var(--bg); 
-            background-image: radial-gradient(circle at 50% -20%, #1a1a1a, #050505);
-            color: white; font-family: 'Segoe UI', Roboto, sans-serif; 
+            color: white; font-family: 'Segoe UI', system-ui, sans-serif; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; margin: 0; overflow: hidden;
         }
 
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            padding: 40px 30px; border-radius: 35px;
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            text-align: center; width: 90%; max-width: 350px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.02);
-            animation: fadeIn 0.8s ease-out;
+        /* Анимированный фон */
+        body::before {
+            content: ""; position: absolute; width: 300px; height: 300px;
+            background: var(--main); filter: blur(150px); opacity: 0.15;
+            top: -50px; left: -50px; z-index: -1; animation: move 10s infinite alternate;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes move { from { transform: translate(0,0); } to { transform: translate(100vw, 50vh); } }
 
-        h2 { 
-            font-weight: 800; letter-spacing: 4px; margin: 0; font-size: 22px; 
-            text-transform: uppercase; background: linear-gradient(to bottom, #fff, #888);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        .card { 
+            background: var(--card); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            padding: 40px 25px; border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.1); 
+            text-align: center; width: 92%; max-width: 360px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.8);
+            animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .status-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 10px var(--primary); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
 
-        #statusText { opacity: 0.5; font-size: 10px; margin: 10px 0 30px; text-transform: uppercase; letter-spacing: 2px; }
-
-        .key-display { 
-            background: rgba(0, 0, 0, 0.6); padding: 22px; border-radius: 20px; margin-bottom: 20px; 
-            font-size: 14px; color: var(--primary); font-family: 'Courier New', monospace;
-            border: 1px solid rgba(0, 255, 163, 0.15); position: relative; overflow: hidden;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        h1 { 
+            font-weight: 900; letter-spacing: 2px; margin: 0 0 10px; font-size: 20px; 
+            color: #fff; text-transform: uppercase;
         }
 
-        #timer { font-size: 11px; color: #ff4a4a; margin-bottom: 20px; font-weight: 600; letter-spacing: 1px; display: none; }
+        .status { font-size: 10px; color: var(--main); letter-spacing: 3px; margin-bottom: 30px; opacity: 0.8; text-transform: uppercase; }
+
+        .key-area { 
+            background: rgba(0, 0, 0, 0.5); padding: 25px; border-radius: 24px; margin-bottom: 20px; 
+            font-size: 15px; color: var(--main); font-family: 'monospace';
+            border: 1px solid rgba(0, 255, 163, 0.1); position: relative;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .timer-box { font-size: 12px; color: #ff4a4a; margin-bottom: 25px; font-weight: 700; display: none; }
 
         button { 
-            background: #ffffff; color: #000; border: none; padding: 18px; border-radius: 16px; 
-            font-weight: 900; width: 100%; font-size: 13px; text-transform: uppercase; cursor: pointer; 
-            transition: all 0.3s; box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+            background: #fff; color: #000; border: none; padding: 20px; border-radius: 20px; 
+            font-weight: 800; width: 100%; font-size: 14px; text-transform: uppercase; cursor: pointer; 
+            transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
-        button:active { transform: scale(0.97); }
-        button:disabled { background: #111; color: #333; box-shadow: none; cursor: default; }
-
-        button.ready { background: var(--primary); box-shadow: 0 0 20px rgba(0, 255, 163, 0.3); }
+        button:active { transform: scale(0.95); opacity: 0.8; }
+        button:disabled { background: #151515; color: #444; cursor: not-allowed; }
+        
+        .ready-btn { background: var(--main); box-shadow: 0 0 30px rgba(0, 255, 163, 0.2); }
     </style>
 </head>
 <body>
-    <div class="glass-card">
-        <h2>DANIIL PRO</h2>
-        <div id="statusText"><span class="status-dot"></span> <span id="st">System Booting...</span></div>
+    <div class="card">
+        <h1>DANIIL KEY SYSTEM</h1>
+        <div class="status" id="stText">ПРОВЕРКА УСТРОЙСТВА...</div>
         
-        <div class="key-display" id="keyBox">•••• •••• •••• ••••</div>
+        <div class="key-area" id="keyDisplay">•••• •••• •••• ••••</div>
         
-        <div id="timer">EXPIRES IN: <span id="timeLeft">00:00:00</span></div>
+        <div class="timer-box" id="timer">ИСТЕКАЕТ ЧЕРЕЗ: <span id="timeLeft">00:00:00</span></div>
         
-        <button id="mainBtn" disabled onclick="generateFlow()">Initialize Key</button>
+        <button id="btn" disabled onclick="start()">ПОЛУЧИТЬ КЛЮЧ</button>
     </div>
 
     <script>
         const API = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
-        let countdownInterval;
+        let timerInt;
 
         function getID() {
-            return btoa([navigator.hardwareConcurrency||8, navigator.deviceMemory||4, screen.width+"x"+screen.height, navigator.platform].join('|')).replace(/[/+=]/g, ""); 
+            return btoa([navigator.hardwareConcurrency||8, screen.width+"x"+screen.height, navigator.platform].join('|')).replace(/[/+=]/g, ""); 
         }
 
         window.onload = async () => {
             const id = getID();
             try {
                 const res = await fetch(`${API}?action=check_device&device=${id}&_t=${Date.now()}`);
-                const result = await res.text();
+                const data = await res.text();
                 
-                if (result.includes("_")) { // Если пришел формат Ключ_Время
-                    const parts = result.split("_");
-                    showKey(parts[0], parseInt(parts[1]));
+                if (data.includes("_")) {
+                    const [key, time] = data.split("_");
+                    renderKey(key, time);
                 } else {
-                    document.getElementById('st').innerText = "Device Authorized";
-                    document.getElementById('mainBtn').disabled = false;
-                    document.getElementById('mainBtn').classList.add('ready');
+                    document.getElementById('stText').innerText = "ДОСТУП РАЗРЕШЕН";
+                    const btn = document.getElementById('btn');
+                    btn.disabled = false;
+                    btn.classList.add('ready-btn');
                 }
-            } catch(e) { document.getElementById('st').innerText = "Sync Error"; }
+            } catch(e) { document.getElementById('stText').innerText = "ОШИБКА СЕТИ"; }
         };
 
-        async function generateFlow() {
-            const btn = document.getElementById('mainBtn');
-            btn.disabled = true; btn.innerText = "Generating...";
+        async function start() {
+            const btn = document.getElementById('btn');
+            btn.disabled = true; btn.innerText = "ГЕНЕРАЦИЯ...";
             const id = getID();
             try {
                 const res = await fetch(`${API}?device=${id}&_t=${Date.now()}`);
-                const result = await res.text();
-                const parts = result.split("_");
-                showKey(parts[0], parseInt(parts[1]));
-            } catch (e) { btn.innerText = "Error"; }
+                const data = await res.text();
+                const [key, time] = data.split("_");
+                renderKey(key, time);
+            } catch (e) { btn.innerText = "ОШИБКА"; btn.disabled = false; }
         }
 
-        function showKey(k, timestamp) {
-            document.getElementById('keyBox').innerText = k;
-            document.getElementById('st').innerText = "Access Granted";
-            const btn = document.getElementById('mainBtn');
-            btn.disabled = false; btn.innerText = "Copy to Clipboard";
-            btn.classList.remove('ready');
+        function renderKey(k, t) {
+            document.getElementById('keyDisplay').innerText = k;
+            document.getElementById('stText').innerText = "КЛЮЧ АКТИВИРОВАН";
+            const btn = document.getElementById('btn');
+            btn.disabled = false; btn.innerText = "СКОПИРОВАТЬ";
+            btn.classList.remove('ready-btn');
             btn.onclick = () => {
                 navigator.clipboard.writeText(k);
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy to Clipboard", 1500);
+                btn.innerText = "СКОПИРОВАНО!";
+                setTimeout(() => btn.innerText = "СКОПИРОВАТЬ", 1500);
             };
-            startTimer(timestamp);
+            runTimer(t);
         }
 
-        function startTimer(createdTime) {
-            const timerDiv = document.getElementById('timer');
-            const timeSpan = document.getElementById('timeLeft');
-            timerDiv.style.display = "block";
+        function runTimer(startT) {
+            const box = document.getElementById('timer');
+            const span = document.getElementById('timeLeft');
+            if (!startT || isNaN(startT)) return;
             
-            if(countdownInterval) clearInterval(countdownInterval);
+            box.style.display = "block";
+            if(timerInt) clearInterval(timerInt);
             
-            countdownInterval = setInterval(() => {
-                const now = Date.now();
-                const diff = (createdTime + 43200000) - now;
-                
-                if (diff <= 0) {
-                    clearInterval(countdownInterval);
-                    location.reload();
-                    return;
-                }
+            timerInt = setInterval(() => {
+                const diff = (Number(startT) + 43200000) - Date.now();
+                if (diff <= 0) { clearInterval(timerInt); location.reload(); return; }
                 
                 const h = Math.floor(diff / 3600000);
                 const m = Math.floor((diff % 3600000) / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
-                timeSpan.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                span.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             }, 1000);
         }
     </script>
