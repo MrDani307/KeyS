@@ -3,65 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daniil | Account System</title>
+    <title>Daniil | Auto System</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: #050505; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .glass-card { 
             background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            padding: 30px; border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.08); 
-            text-align: center; width: 90%; max-width: 340px;
+            padding: 40px 25px; border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.08); 
+            text-align: center; width: 90%; max-width: 360px; box-shadow: 0 25px 50px rgba(0,0,0,0.9);
         }
         .key-display { 
-            background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 12px; margin: 15px 0; 
-            font-size: 14px; color: #00ffa3; word-break: break-all; border: 1px solid rgba(0, 255, 163, 0.1);
-            min-height: 50px; display: flex; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 18px; margin: 20px 0; 
+            font-size: 15px; color: #00ffa3; word-break: break-all; border: 1px solid rgba(0, 255, 163, 0.1);
         }
-        input {
-            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05); color: white; margin-bottom: 15px; text-align: center;
-        }
-        button { 
-            background: #fff; color: #000; border: none; padding: 15px; border-radius: 12px; 
-            font-weight: 800; width: 100%; cursor: pointer; transition: 0.2s;
-        }
-        button:disabled { background: #222; color: #555; }
+        button { background: #fff; color: #000; border: none; padding: 18px; border-radius: 14px; font-weight: 800; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="glass-card">
-        <h2 style="margin-top:0">DANIIL KEYS</h2>
-        <input type="text" id="nickInput" placeholder="Enter Nickname (e.g. Daniil)">
-        <div class="key-display" id="keyBox">READY</div>
-        <button id="btn" onclick="handle()">Get Key</button>
+        <h2>DANIIL SYSTEM</h2>
+        <div id="status">Syncing Device...</div>
+        <div class="key-display" id="keyDisplay">••••••••••••••••</div>
+        <button id="mainBtn" disabled onclick="generateFlow()">Get Key</button>
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
-        
-        async function handle() {
-            const nick = document.getElementById('nickInput').value.trim();
-            const btn = document.getElementById('btn');
-            const box = document.getElementById('keyBox');
-            
-            if(nick.length < 3) return alert("Nickname too short!");
-            
-            btn.disabled = true;
-            btn.innerText = "Processing...";
-            
+        const API_URL = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
+
+        // Генерация отпечатка через Canvas (работает в Инкогнито)
+        function getCanvasFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = "top";
+            ctx.font = "14px 'Arial'";
+            ctx.fillText("DaniilKeySystem", 2, 2);
+            return btoa(canvas.toDataURL()).substring(100, 120); 
+        }
+
+        window.onload = async () => {
+            const fp = getCanvasFingerprint();
             try {
-                // Мы отправляем ник как "device", чтобы не менять скрипт сильно
-                const res = await fetch(`${API}?device=${nick}&_t=${Date.now()}`);
-                const key = await res.text();
-                box.innerText = key;
-                setupCopy(key);
-            } catch(e) { 
-                btn.disabled = false; btn.innerText = "Error"; 
-            }
+                const res = await fetch(`${API_URL}?action=check_device&device=${fp}&_t=${Date.now()}`);
+                const result = await res.text();
+                if (result !== "none") {
+                    document.getElementById('keyDisplay').innerText = result;
+                    setupCopy(result);
+                } else {
+                    document.getElementById('status').innerText = "Device Synced";
+                    document.getElementById('mainBtn').disabled = false;
+                }
+            } catch(e) { document.getElementById('status').innerText = "Offline"; }
+        };
+
+        async function generateFlow() {
+            const btn = document.getElementById('mainBtn');
+            btn.disabled = true;
+            const fp = getCanvasFingerprint();
+            const res = await fetch(`${API_URL}?device=${fp}&_t=${Date.now()}`);
+            const result = await res.text();
+            document.getElementById('keyDisplay').innerText = result;
+            setupCopy(result);
         }
 
         function setupCopy(k) {
-            const btn = document.getElementById('btn');
+            const btn = document.getElementById('mainBtn');
             btn.disabled = false; btn.innerText = "Copy Key";
             btn.onclick = () => {
                 navigator.clipboard.writeText(k);
