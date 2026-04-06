@@ -1,146 +1,322 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>DANIIL KEY SYSTEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #00ffa3; --bg: #050505; --card: rgba(255, 255, 255, 0.03); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        :root {
+            --primary: #00ffa3;
+            --primary-dim: rgba(0, 255, 163, 0.15);
+            --bg: #000;
+            --text: #fff;
+            --error: #ff3c3c;
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            margin: 0;
+            padding: 0;
+        }
         
         body { 
             background: var(--bg); 
-            color: white; font-family: 'Segoe UI', system-ui, sans-serif; 
+            color: var(--text); 
+            font-family: 'Montserrat', sans-serif; 
             display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; overflow: hidden;
+            height: 100vh; width: 100vw; margin: 0; overflow: hidden;
+            perspective: 1000px;
         }
 
-        /* Анимированный фон */
+        /* --- IMMERSIVE AURORA BACKGROUND --- */
         body::before {
-            content: ""; position: absolute; width: 300px; height: 300px;
-            background: var(--main); filter: blur(150px); opacity: 0.15;
-            top: -50px; left: -50px; z-index: -1; animation: move 10s infinite alternate;
+            content: ""; position: absolute; inset: -100px;
+            background: 
+                radial-gradient(circle at 10% 10%, #1a1a1a 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, #0a0a0a 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, #000 0%, #050505 100%);
+            z-index: -2;
         }
 
-        @keyframes move { from { transform: translate(0,0); } to { transform: translate(100vw, 50vh); } }
+        body::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(130deg, transparent 40%, rgba(0, 255, 163, 0.08) 50%, transparent 60%),
+                linear-gradient(170deg, transparent 20%, rgba(128, 0, 255, 0.05) 40%, transparent 70%);
+            background-size: 200% 200%;
+            z-index: -1;
+            filter: blur(100px);
+            animation: auroraBackground 15s infinite linear;
+        }
+
+        @keyframes auroraBackground {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        /* --- THE GLASS CARD WITH GRADIENT BORDER --- */
+        .card-wrapper {
+            position: relative; padding: 2px; border-radius: 40px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent 40%, rgba(0,255,163,0.3));
+            background-size: 300% 300%;
+            animation: borderGradientPulse 6s infinite var(--ease);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+
+        @keyframes borderGradientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
         .card { 
-            background: var(--card); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            padding: 40px 25px; border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.1); 
-            text-align: center; width: 92%; max-width: 360px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.8);
-            animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            background: rgba(8, 8, 8, 0.85);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            padding: 50px 30px; border-radius: 38px;
+            text-align: center; width: 92vw; max-width: 360px;
+            position: relative; overflow: hidden;
+            animation: cardEntrance 1s var(--ease);
         }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: scale(0.9) translateY(40px) rotateX(-10deg); }
+            to { opacity: 1; transform: scale(1) translateY(0) rotateX(0); }
+        }
 
+        /* Sublte internal depth */
+        .card::before {
+            content: ""; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.4) 100%);
+            pointer-events: none;
+        }
+
+        /* --- TYPOGRAPHY: MAXIMUM PRESTIGE --- */
         h1 { 
-            font-weight: 900; letter-spacing: 2px; margin: 0 0 10px; font-size: 20px; 
-            color: #fff; text-transform: uppercase;
+            font-weight: 900; letter-spacing: 2px; margin: 0 0 8px; font-size: 20px; 
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #fff 0%, #aaa 50%, #fff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmerTitle 4s linear infinite;
         }
 
-        .status { font-size: 10px; color: var(--main); letter-spacing: 3px; margin-bottom: 30px; opacity: 0.8; text-transform: uppercase; }
+        @keyframes shimmerTitle { to { background-position: 200% center; } }
 
+        .status-container {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; color: var(--primary); letter-spacing: 3px;
+            margin-bottom: 35px; text-transform: uppercase; font-weight: 700;
+        }
+
+        .status-pulse {
+            width: 6px; height: 6px; background-color: var(--primary);
+            border-radius: 50%; margin-right: 8px;
+            box-shadow: 0 0 12px var(--primary);
+            animation: pulseActive 2s infinite var(--ease);
+        }
+
+        @keyframes pulseActive { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0.3; transform: scale(0.8); } }
+
+        /* --- DEEP INSET KEY AREA --- */
         .key-area { 
-            background: rgba(0, 0, 0, 0.5); padding: 25px; border-radius: 24px; margin-bottom: 20px; 
-            font-size: 15px; color: var(--main); font-family: 'monospace';
+            background: #000; padding: 25px; border-radius: 20px; margin-bottom: 25px; 
+            font-size: 15px; color: var(--primary); font-family: 'Courier New', monospace; font-weight: 700;
             border: 1px solid rgba(0, 255, 163, 0.1); position: relative;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.05);
+            text-shadow: 0 0 8px var(--primary);
+            word-break: break-all;
+            transition: all 0.3s var(--ease);
         }
-
-        .timer-box { font-size: 12px; color: #ff4a4a; margin-bottom: 25px; font-weight: 700; display: none; }
-
-        button { 
-            background: #fff; color: #000; border: none; padding: 20px; border-radius: 20px; 
-            font-weight: 800; width: 100%; font-size: 14px; text-transform: uppercase; cursor: pointer; 
-            transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        button:active { transform: scale(0.95); opacity: 0.8; }
-        button:disabled { background: #151515; color: #444; cursor: not-allowed; }
         
-        .ready-btn { background: var(--main); box-shadow: 0 0 30px rgba(0, 255, 163, 0.2); }
+        .key-area.active { border-color: rgba(0, 255, 163, 0.4); box-shadow: inset 0 5px 15px rgba(0,0,0,0.8), 0 0 15px var(--primary-dim); }
+
+        /* --- RED ALERT TIMER --- */
+        .timer-box { font-size: 12px; color: var(--error); margin-bottom: 30px; font-weight: 800; letter-spacing: 1px; display: none; text-shadow: 0 0 10px rgba(255,60,60,0.3); animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- THE PREMIUM BUTTON --- */
+        button { 
+            position: relative;
+            background: #fff; color: #000; border: none; padding: 22px; border-radius: 18px; 
+            font-weight: 900; width: 100%; font-size: 14px; text-transform: uppercase; cursor: pointer; 
+            letter-spacing: 1px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Glow layer */
+        button::after {
+            content: ""; position: absolute; inset: 0; border-radius: 18px;
+            box-shadow: 0 0 0 rgba(0, 255, 163, 0); transition: box-shadow 0.4s ease;
+        }
+
+        button:active { transform: scale(0.96) translateY(2px); }
+        
+        button:disabled { background: #1a1a1a; color: #555; cursor: not-allowed; box-shadow: none; }
+        
+        button.action-required {
+            background: linear-gradient(135deg, #00ffa3, #00cd82);
+            color: #000;
+            box-shadow: 0 10px 30px rgba(0, 255, 163, 0.2);
+        }
+        
+        button.action-required::after { box-shadow: 0 0 25px rgba(0, 255, 163, 0.3); }
+
+        button.action-required:active { box-shadow: 0 5px 15px rgba(0, 255, 163, 0.1); }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>DANIIL KEY SYSTEM</h1>
-        <div class="status" id="stText">ПРОВЕРКА УСТРОЙСТВА...</div>
-        
-        <div class="key-area" id="keyDisplay">•••• •••• •••• ••••</div>
-        
-        <div class="timer-box" id="timer">ИСТЕКАЕТ ЧЕРЕЗ: <span id="timeLeft">00:00:00</span></div>
-        
-        <button id="btn" disabled onclick="start()">ПОЛУЧИТЬ КЛЮЧ</button>
+    <div class="card-wrapper">
+        <div class="card">
+            <h1>DANIIL KEY SYSTEM</h1>
+            <div class="status-container" id="stContainer">
+                <div class="status-pulse"></div>
+                <span id="stText">SYNCING DEVICE...</span>
+            </div>
+            
+            <div class="key-area" id="keyDisplay">•••• •••• •••• ••••</div>
+            
+            <div class="timer-box" id="timer">EXPIRES IN: <span id="timeLeft">00:00:00</span></div>
+            
+            <button id="btn" disabled onclick="startFlow()">Initialize</button>
+        </div>
     </div>
 
     <script>
+        // Use your working API URL here
         const API = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
-        let timerInt;
+        let timerInterval;
 
+        // Device identification logic (stable Fingerprint)
         function getID() {
-            return btoa([navigator.hardwareConcurrency||8, screen.width+"x"+screen.height, navigator.platform].join('|')).replace(/[/+=]/g, ""); 
+            return btoa([
+                navigator.hardwareConcurrency || 8,
+                navigator.deviceMemory || 4,
+                screen.width + "x" + screen.height,
+                navigator.platform
+            ].join('|')).replace(/[/+=]/g, ""); 
         }
 
+        // On Page Load
         window.onload = async () => {
             const id = getID();
             try {
-                const res = await fetch(`${API}?action=check_device&device=${id}&_t=${Date.now()}`);
-                const data = await res.text();
+                const response = await fetch(`${API}?action=check_device&device=${id}&_t=${Date.now()}`);
+                const data = await response.text();
                 
                 if (data.includes("_")) {
+                    // Active key found
                     const [key, time] = data.split("_");
-                    renderKey(key, time);
+                    renderKeyState(key, time);
                 } else {
-                    document.getElementById('stText').innerText = "ДОСТУП РАЗРЕШЕН";
+                    // Ready to generate
+                    document.getElementById('stText').innerText = "DEVICE IDENTIFIED";
                     const btn = document.getElementById('btn');
                     btn.disabled = false;
-                    btn.classList.add('ready-btn');
+                    btn.innerText = "GET ACCESS KEY";
+                    btn.classList.add('action-required');
                 }
-            } catch(e) { document.getElementById('stText').innerText = "ОШИБКА СЕТИ"; }
+            } catch(e) { 
+                document.getElementById('stText').innerText = "CONNECTION ERROR"; 
+                document.getElementById('stText').style.color = "#ff3c3c";
+                document.querySelector('.status-pulse').style.background = "#ff3c3c";
+            }
         };
 
-        async function start() {
+        // User clicks "GET ACCESS KEY"
+        async function startFlow() {
             const btn = document.getElementById('btn');
-            btn.disabled = true; btn.innerText = "ГЕНЕРАЦИЯ...";
+            const stText = document.getElementById('stText');
+            btn.disabled = true; 
+            btn.innerText = "GENERATING...";
+            btn.classList.remove('action-required');
+            stText.innerText = "CONTACTING SERVER...";
+
             const id = getID();
             try {
-                const res = await fetch(`${API}?device=${id}&_t=${Date.now()}`);
-                const data = await res.text();
-                const [key, time] = data.split("_");
-                renderKey(key, time);
-            } catch (e) { btn.innerText = "ОШИБКА"; btn.disabled = false; }
+                const response = await fetch(`${API}?device=${id}&_t=${Date.now()}`);
+                const data = await response.text();
+                
+                // Parse "Key_Timestamp" format
+                if (data.includes("_")) {
+                    const [key, time] = data.split("_");
+                    renderKeyState(key, time);
+                } else {
+                    throw new Error("Invalid response");
+                }
+            } catch (e) { 
+                btn.innerText = "ERROR"; 
+                btn.disabled = false; 
+                stText.innerText = "GENERATION FAILED";
+            }
         }
 
-        function renderKey(k, t) {
-            document.getElementById('keyDisplay').innerText = k;
-            document.getElementById('stText').innerText = "КЛЮЧ АКТИВИРОВАН";
+        // Display key, timer, and update button to "COPY"
+        function renderKeyState(key, startTime) {
+            document.getElementById('keyDisplay').innerText = key;
+            document.getElementById('keyDisplay').classList.add('active');
+            document.getElementById('stText').innerText = "KEY ACTIVATED";
+            
             const btn = document.getElementById('btn');
-            btn.disabled = false; btn.innerText = "СКОПИРОВАТЬ";
-            btn.classList.remove('ready-btn');
-            btn.onclick = () => {
-                navigator.clipboard.writeText(k);
-                btn.innerText = "СКОПИРОВАНО!";
-                setTimeout(() => btn.innerText = "СКОПИРОВАТЬ", 1500);
-            };
-            runTimer(t);
+            btn.disabled = false; 
+            btn.innerText = "COPY ACCESS KEY";
+            btn.classList.add('action-required');
+            btn.onclick = () => copyKey(key);
+            
+            runCountdown(startTime);
         }
 
-        function runTimer(startT) {
+        // Copy logic
+        function copyKey(key) {
+            const btn = document.getElementById('btn');
+            navigator.clipboard.writeText(key).then(() => {
+                btn.innerText = "COPIED TO CLIPBOARD!";
+                setTimeout(() => btn.innerText = "COPY ACCESS KEY", 2000);
+            });
+        }
+
+        // Countdown logic (handles NaN or bad data safely)
+        function runCountdown(createdTimeStr) {
             const box = document.getElementById('timer');
             const span = document.getElementById('timeLeft');
-            if (!startT || isNaN(startT)) return;
+            const createdTime = Number(createdTimeStr);
+
+            if (!createdTime || isNaN(createdTime)) {
+                console.error("Timer error: Invalid createdTime.");
+                return;
+            }
             
             box.style.display = "block";
-            if(timerInt) clearInterval(timerInt);
+            if(timerInterval) clearInterval(timerInterval);
             
-            timerInt = setInterval(() => {
-                const diff = (Number(startT) + 43200000) - Date.now();
-                if (diff <= 0) { clearInterval(timerInt); location.reload(); return; }
+            // 12 Hours in Milliseconds = 43200000
+            const LIFESPAN = 43200000;
+            
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = (createdTime + LIFESPAN) - now;
                 
+                // If expired
+                if (diff <= 0) { 
+                    clearInterval(timerInterval); 
+                    location.reload(); 
+                    return; 
+                }
+                
+                // Calculation Ч:М:С
                 const h = Math.floor(diff / 3600000);
                 const m = Math.floor((diff % 3600000) / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
+                
+                // Formatting
                 span.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             }, 1000);
         }
