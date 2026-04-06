@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daniil | Key System</title>
+    <title>Daniil | Fingerprint System</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: #050505; color: white; font-family: 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
@@ -26,50 +26,50 @@
         }
         button:active { transform: scale(0.96); background: #eee; }
         button:disabled { background: #1a1a1a; color: #444; }
-        #timer { margin-top: 15px; font-size: 10px; color: #ff4a4a; display: none; }
     </style>
 </head>
 <body>
     <div class="glass-card">
         <h2>DANIIL SYSTEM</h2>
-        <div id="statusText">Initialising...</div>
+        <div id="statusText">Identifying Device...</div>
         <div class="key-display" id="keyDisplay">••••••••••••••••</div>
         <button id="mainBtn" disabled onclick="generateFlow()">Get Key</button>
-        <div id="timer">Expires in: <span id="timeLeft"></span></div>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
         
-        window.onload = checkStatus;
-
-        async function getIP() {
-            try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                return data.ip;
-            } catch (e) { return "unknown"; }
+        // Функция создания отпечатка устройства
+        function getDeviceId() {
+            const info = [
+                navigator.userAgent,
+                screen.width + "x" + screen.height,
+                new Date().getTimezoneOffset(),
+                navigator.hardwareConcurrency,
+                navigator.deviceMemory
+            ];
+            return btoa(info.join("|")).substring(0, 16); // Генерируем короткий ID
         }
+
+        window.onload = checkStatus;
 
         async function checkStatus() {
             const btn = document.getElementById('mainBtn');
             const display = document.getElementById('keyDisplay');
             const status = document.getElementById('statusText');
+            const devId = getDeviceId();
+
             try {
-                const ip = await getIP();
-                const response = await fetch(`${API_URL}?action=generate&ip=${ip}&_t=${Date.now()}`);
+                // Пытаемся найти уже созданный ключ для этого устройства
+                const response = await fetch(`${API_URL}?action=check_device&device=${devId}&_t=${Date.now()}`);
                 const result = await response.text();
 
-                if (result.startsWith("exists_")) {
-                    const parts = result.split("_");
-                    const activeKey = parts[1]; // Теперь берет Daniil.key:хвост целиком
-                    const remaining = parseInt(parts[2]);
-                    status.innerText = "Key is active";
-                    display.innerText = activeKey;
-                    setupCopy(activeKey);
-                    startTimer(Date.now() + remaining);
+                if (result !== "none" && result !== "invalid") {
+                    status.innerText = "Key recognized for this device";
+                    display.innerText = result;
+                    setupCopy(result);
                 } else {
-                    status.innerText = "Ready to generate";
+                    status.innerText = "Device identified. Ready.";
                     display.innerText = "READY";
                     btn.disabled = false;
                 }
@@ -82,12 +82,11 @@
             btn.disabled = true;
             btn.innerText = "Generating...";
             try {
-                const ip = await getIP();
-                const response = await fetch(`${API_URL}?action=generate&ip=${ip}&_t=${Date.now()}`);
+                const devId = getDeviceId();
+                const response = await fetch(`${API_URL}?device=${devId}&_t=${Date.now()}`);
                 const result = await response.text();
                 display.innerText = result;
                 setupCopy(result);
-                startTimer(Date.now() + (12 * 60 * 60 * 1000));
             } catch (e) { btn.innerText = "Error"; btn.disabled = false; }
         }
 
@@ -101,19 +100,6 @@
                     setTimeout(() => btn.innerText = "Copy Key", 1500);
                 });
             };
-        }
-
-        function startTimer(endTime) {
-            document.getElementById('timer').style.display = "block";
-            const timeSpan = document.getElementById('timeLeft');
-            setInterval(() => {
-                const diff = endTime - Date.now();
-                if (diff <= 0) return location.reload();
-                const h = Math.floor(diff/3600000);
-                const m = Math.floor((diff%3600000)/60000);
-                const s = Math.floor((diff%60000)/1000);
-                timeSpan.innerText = `${h}h ${m}m ${s}s`;
-            }, 1000);
         }
     </script>
 </body>
