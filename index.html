@@ -3,102 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daniil | Fingerprint System</title>
+    <title>Daniil | Ultimate Key</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: #050505; color: white; font-family: 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        body { background: #050505; color: white; font-family: 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .glass-card { 
             background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             padding: 40px 25px; border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.08); 
-            text-align: center; width: 90%; max-width: 360px; box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+            text-align: center; width: 90%; max-width: 360px;
         }
-        h2 { font-weight: 700; letter-spacing: 2px; margin: 0 0 8px 0; font-size: 24px; text-transform: uppercase; color: #fff; }
-        #statusText { opacity: 0.5; font-size: 11px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; }
         .key-display { 
-            background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 18px; margin-bottom: 25px; 
-            font-size: 15px; color: #00ffa3; font-family: 'Courier New', monospace; border: 1px solid rgba(0, 255, 163, 0.1);
-            min-height: 60px; display: flex; align-items: center; justify-content: center; word-break: break-all;
+            background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 18px; margin: 20px 0; 
+            font-size: 15px; color: #00ffa3; word-break: break-all; border: 1px solid rgba(0, 255, 163, 0.1);
         }
         button { 
-            background: #ffffff; color: #000; border: none; padding: 18px; border-radius: 14px; 
-            font-weight: 800; width: 100%; font-size: 13px; text-transform: uppercase; cursor: pointer; 
-            transition: transform 0.1s, background 0.2s;
+            background: #fff; color: #000; border: none; padding: 18px; border-radius: 14px; 
+            font-weight: 800; width: 100%; cursor: pointer;
         }
-        button:active { transform: scale(0.96); background: #eee; }
-        button:disabled { background: #1a1a1a; color: #444; }
     </style>
 </head>
 <body>
     <div class="glass-card">
         <h2>DANIIL SYSTEM</h2>
-        <div id="statusText">Identifying Device...</div>
+        <div id="status">Loading...</div>
         <div class="key-display" id="keyDisplay">••••••••••••••••</div>
         <button id="mainBtn" disabled onclick="generateFlow()">Get Key</button>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
-        
-        // Функция создания отпечатка устройства
-        function getDeviceId() {
-            const info = [
-                navigator.userAgent,
-                screen.width + "x" + screen.height,
-                new Date().getTimezoneOffset(),
-                navigator.hardwareConcurrency,
-                navigator.deviceMemory
-            ];
-            return btoa(info.join("|")).substring(0, 16); // Генерируем короткий ID
+
+        function getUID() {
+            let id = localStorage.getItem('d_uid') || document.cookie.replace(/(?:(?:^|.*;\s*)d_uid\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+            if (!id) {
+                id = 'dev_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('d_uid', id);
+                document.cookie = `d_uid=${id}; max-age=31536000; path=/`;
+            }
+            return id;
         }
 
-        window.onload = checkStatus;
-
-        async function checkStatus() {
-            const btn = document.getElementById('mainBtn');
-            const display = document.getElementById('keyDisplay');
-            const status = document.getElementById('statusText');
-            const devId = getDeviceId();
-
+        window.onload = async () => {
+            const uid = getUID();
             try {
-                // Пытаемся найти уже созданный ключ для этого устройства
-                const response = await fetch(`${API_URL}?action=check_device&device=${devId}&_t=${Date.now()}`);
-                const result = await response.text();
-
-                if (result !== "none" && result !== "invalid") {
-                    status.innerText = "Key recognized for this device";
-                    display.innerText = result;
+                const res = await fetch(`${API_URL}?action=check_device&device=${uid}&_t=${Date.now()}`);
+                const result = await res.text();
+                if (result !== "none") {
+                    document.getElementById('keyDisplay').innerText = result;
                     setupCopy(result);
                 } else {
-                    status.innerText = "Device identified. Ready.";
-                    display.innerText = "READY";
-                    btn.disabled = false;
+                    document.getElementById('status').innerText = "Ready";
+                    document.getElementById('mainBtn').disabled = false;
                 }
-            } catch (e) { status.innerText = "Connection Error"; }
-        }
+            } catch(e) { document.getElementById('status').innerText = "Error"; }
+        };
 
         async function generateFlow() {
             const btn = document.getElementById('mainBtn');
-            const display = document.getElementById('keyDisplay');
             btn.disabled = true;
-            btn.innerText = "Generating...";
-            try {
-                const devId = getDeviceId();
-                const response = await fetch(`${API_URL}?device=${devId}&_t=${Date.now()}`);
-                const result = await response.text();
-                display.innerText = result;
-                setupCopy(result);
-            } catch (e) { btn.innerText = "Error"; btn.disabled = false; }
+            const uid = getUID();
+            const res = await fetch(`${API_URL}?device=${uid}&_t=${Date.now()}`);
+            const result = await res.text();
+            document.getElementById('keyDisplay').innerText = result;
+            setupCopy(result);
         }
 
-        function setupCopy(key) {
+        function setupCopy(k) {
             const btn = document.getElementById('mainBtn');
-            btn.disabled = false;
-            btn.innerText = "Copy Key";
+            btn.disabled = false; btn.innerText = "Copy Key";
             btn.onclick = () => {
-                navigator.clipboard.writeText(key).then(() => {
-                    btn.innerText = "Copied!";
-                    setTimeout(() => btn.innerText = "Copy Key", 1500);
-                });
+                navigator.clipboard.writeText(k);
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy Key", 1500);
             };
         }
     </script>
