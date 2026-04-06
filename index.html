@@ -31,9 +31,9 @@
 
     <div class="glass-card">
         <h2>sKillAura</h2>
-        <p>Key expires in 12 hours</p>
-        <div class="key-display" id="keyDisplay">NOT GENERATED</div>
-        <button id="mainBtn" onclick="generateFlow()">Get Key</button>
+        <p id="statusText">Checking status...</p>
+        <div class="key-display" id="keyDisplay">••••••••••</div>
+        <button id="mainBtn" disabled onclick="generateFlow()">Get Key</button>
         <div id="timer">Cooldown: <span id="timeLeft"></span></div>
     </div>
 
@@ -41,7 +41,8 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
         const cooldownTime = 12 * 60 * 60 * 1000;
 
-        window.onload = checkExistingKey;
+        // Запуск проверки сразу при загрузке
+        window.onload = checkStatusByIP;
 
         async function getIP() {
             const res = await fetch('https://api.ipify.org?format=json');
@@ -49,42 +50,54 @@
             return data.ip;
         }
 
+        async function checkStatusByIP() {
+            const btn = document.getElementById('mainBtn');
+            const display = document.getElementById('keyDisplay');
+            const status = document.getElementById('statusText');
+
+            try {
+                const ip = await getIP();
+                // Делаем тестовый запрос генерации (сервер сам поймет, если ключ уже есть)
+                const response = await fetch(API_URL + "?action=generate&ip=" + ip);
+                const result = await response.text();
+
+                if (result.startsWith("cooldown_")) {
+                    // Ключ уже есть в базе для этого IP!
+                    // Чтобы получить сам текст ключа, нам нужно будет добавить функцию в GAS, 
+                    // но пока мы просто скажем пользователю, что он уже генерировал.
+                    // Давай для удобства пока выводить "ALREADY GENERATED"
+                    status.innerText = "Key already active";
+                    display.innerText = "CHECK TABLE"; // В идеале тут должен быть сам ключ
+                    const remaining = parseInt(result.split("_")[1]);
+                    startTimer(Date.now() + remaining);
+                } else {
+                    // Ключа нет, даем генерировать
+                    status.innerText = "Key expires in 12 hours";
+                    display.innerText = "NOT GENERATED";
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                status.innerText = "Connection error";
+            }
+        }
+
         async function generateFlow() {
             const btn = document.getElementById('mainBtn');
             const display = document.getElementById('keyDisplay');
             btn.disabled = true;
-            btn.innerText = "Checking...";
+            btn.innerText = "Generating...";
 
             try {
                 const ip = await getIP();
                 const response = await fetch(API_URL + "?action=generate&ip=" + ip);
                 const result = await response.text();
 
-                if (result.startsWith("cooldown_")) {
-                    const remaining = parseInt(result.split("_")[1]);
-                    alert("You already generated a key recently!");
-                    startTimer(Date.now() + remaining);
-                } else {
-                    localStorage.setItem('skillKey', result);
-                    localStorage.setItem('skillTime', Date.now());
-                    display.innerText = result;
-                    setupCopyMode(result);
-                    startTimer(Date.now() + cooldownTime);
-                }
+                display.innerText = result;
+                setupCopyMode(result);
+                startTimer(Date.now() + cooldownTime);
             } catch (e) {
-                alert("Server Error!");
+                alert("Error!");
                 btn.disabled = false;
-                btn.innerText = "Try Again";
-            }
-        }
-
-        function checkExistingKey() {
-            const savedKey = localStorage.getItem('skillKey');
-            const savedTime = localStorage.getItem('skillTime');
-            if (savedKey && savedTime && (Date.now() - savedTime < cooldownTime)) {
-                document.getElementById('keyDisplay').innerText = savedKey;
-                setupCopyMode(savedKey);
-                startTimer(parseInt(savedTime) + cooldownTime);
             }
         }
 
