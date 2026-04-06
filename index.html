@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sKillAura | Key System</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background: #080808; 
+            color: white; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
+        /* Эффект Glassmorphism */
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(25px); 
+            -webkit-backdrop-filter: blur(25px);
+            padding: 40px 30px; 
+            border-radius: 35px; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            text-align: center; 
+            width: 90%; 
+            max-width: 380px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 { font-weight: 600; letter-spacing: 1px; margin: 0 0 10px 0; font-size: 28px; }
+        p { opacity: 0.5; font-size: 14px; margin-bottom: 30px; }
+        
+        .key-display { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 18px; 
+            border-radius: 18px; 
+            margin-bottom: 30px; 
+            font-size: 20px; 
+            color: #00ffa3; 
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(0, 255, 163, 0.2);
+            text-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button { 
+            background: #ffffff; 
+            color: #000000; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 16px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            width: 100%; 
+            font-size: 16px;
+            text-transform: uppercase;
+            box-shadow: 0 10px 20px rgba(255,255,255,0.1);
+        }
+        button:active { transform: scale(0.96); opacity: 0.9; }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="glass-card">
+        <h2>sKillAura</h2>
+        <p>Ключ активен 12 часов</p>
+        
+        <div class="key-display" id="keyDisplay">••••••••••</div>
+        
+        <button id="mainBtn" onclick="handleFlow()">Получить ключ</button>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbx46m49ht_d_30fHruJeu4O7Nxu-L6qz_cR8LjOcWUH5gyYdvMDrPOOnl0ttCvdd4Uf/exec";
+        let generatedKey = "";
+
+        async function handleFlow() {
+            const btn = document.getElementById('mainBtn');
+            const display = document.getElementById('keyDisplay');
+
+            if (generatedKey === "") {
+                // Этап генерации
+                btn.disabled = true;
+                btn.innerText = "Генерация...";
+                display.innerText = "ЗАГРУЗКА...";
+
+                try {
+                    const response = await fetch(API_URL + "?action=generate");
+                    generatedKey = await response.text();
+                    
+                    display.innerText = generatedKey;
+                    btn.disabled = false;
+                    btn.innerText = "Копировать";
+                } catch (error) {
+                    alert("Ошибка сервера! Проверь интернет.");
+                    btn.disabled = false;
+                    btn.innerText = "Попробовать снова";
+                    display.innerText = "ОШИБКА";
+                }
+            } else {
+                // Этап копирования
+                copyToClipboard(generatedKey);
+            }
+        }
+
+        function copyToClipboard(text) {
+            const btn = document.getElementById('mainBtn');
+            const tempInput = document.createElement("input");
+            document.body.appendChild(tempInput);
+            tempInput.value = text;
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            const originalText = btn.innerText;
+            btn.innerText = "СКОПИРОВАНО!";
+            setTimeout(() => { btn.innerText = originalText; }, 2000);
+        }
+    </script>
+</body>
+</html>
